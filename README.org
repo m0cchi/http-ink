@@ -1,0 +1,27 @@
+#+title: http-ink
+is HTTP-Server
+
+#+begin_src cl
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(ql:quickload :http-ink)
+(ql:quickload :local-time)
+
+(http-ink:defroutes
+ (:get "/" () (list :header (list "HTTP/1.1" "200 OK"
+                          :date (local-time:format-rfc1123-timestring nil 
+                                                                      (local-time:universal-to-timestamp (get-universal-time)))
+                          :server "http-ink"
+                          :connection "close"
+                          :content-type "text/html; charset=utf-8")
+                :body "<html><head><title>http-ink</title><head><body>http-ink</body></html>")))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq toy-gun:*cartridge* #'http-ink:ink)
+  (toy-gun:start :port 8080 :address "0.0.0.0"))
+#+begin_end
+
