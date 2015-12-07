@@ -76,7 +76,9 @@
         (body (getf response :body)))
     (push :content-length header)
     (push (babel:string-size-in-octets body) header)
-    (format stream "~{~a: ~a~%~}~%" (reverse header))
+    (setq header (reverse header))
+    (format stream "~a ~a~%" (pop header) (pop header))
+    (format stream "~{~a: ~a~%~}~c~c" header #\newline #\return)
     (format stream "~a" body))
   (force-output stream))
 
