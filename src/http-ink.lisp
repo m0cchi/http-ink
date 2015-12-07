@@ -78,7 +78,7 @@
     (push (babel:string-size-in-octets body) header)
     (setq header (reverse header))
     (format stream "~a ~a~%" (pop header) (pop header))
-    (format stream "~{~a: ~a~%~}~c~c" header #\newline #\return)
+    (format stream "~{~a: ~a~%~}~%" header)
     (format stream "~a" body))
   (force-output stream))
 
