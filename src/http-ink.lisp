@@ -1,18 +1,92 @@
 (in-package :cl-user)
 (defpackage http-ink
   (:use :cl)
-  (:export ink))
+  (:use babel)
+  (:use split-sequence)
+  (:export ink defroutes))
 
 (in-package :http-ink)
 
-(defun ink (stream)
-  (format t "start ink~%")
-  (let ((ret ""))
-    (loop for input = (read-char stream nil nil)
-          while input do
+(defvar *routes* '())
+
+(defmacro defroutes (&rest routes)
+  (loop for route in routes while route do
+        (let ((method-type (nth 0 route))
+              (path (nth 1 route))
+              (param (nth 2 route))
+              (method (nth 3 route)))
+          (push `(:method-type ,method-type
+                  :path ,path
+                  :param-length ,(length param)
+                  :method ,(eval `(lambda ,param ,method)))
+                *routes*))))
+
+(defun make-keyword (str)
+  (values (intern (string-upcase str) "KEYWORD")))
+
+(defun is-header (line)
+  (if (= (length line) 0)
+      '()
+    (let ((line-head (elt line 0)))
+      (not (or (eql line-head #\return)
+               (eql line-head #\newline))))))
+
+(defun read-header (stream)
+  (let ((header '()))
+    (loop for line = (read-line stream nil nil)
+          while (is-header line) do
           (progn
-            (setq ret (format nil "~a~a" ret input))
-            (format stream "~a" input)
-            (format t "~A" input)
-            (force-output stream))))
-  (format t "end~%"))
+            (push (string-trim '(#\return #\newline) line) header)))
+    (reverse header)))
+
+(defun parse-method-path-version (method-path-version)
+  (let ((header '()))
+    (if (< (length method-path-version) 3)
+        (error "version"))
+    (push :method-type header)
+    (push (make-keyword (nth 0 method-path-version)) header)
+    (push :path header)
+    (push (nth 1 method-path-version) header)
+    header))
+
+(defun parse-header-field (field)
+  (let* ((index (position #\: field)))
+    (if index
+        (let ((key (make-keyword (subseq field 0 index)))
+              (value (string-trim '(#\space)
+                                  (subseq field (1+ index) (length field)))))
+          `(,key ,value))
+      (error (format nil "invalid header field: ~a~%" field)))))
+
+(defun parse-header (lines)
+  (let* ((first-line (split-sequence:split-sequence #\space (pop lines)))
+         (header (parse-method-path-version first-line)))
+    (loop for field in lines do
+          (loop for korv in (parse-header-field field) do
+                (push korv header)))
+    (reverse header)))
+
+(defun read-body (stream content-length)
+  (let ((buf (make-string content-length)))
+    (read-sequence buf stream)
+    buf))
+
+(defun write-response (stream response)
+  (let ((header (reverse (getf response :header)))
+        (body (getf response :body)))
+    (push :content-length header)
+    (push (babel:string-size-in-octets body) header)
+    (format stream "~{~a: ~a~%~}~%" (reverse header))
+    (format stream "~a" body))
+  (force-output stream))
+
+(defun ink (stream)
+  (let ((header (parse-header
+                 (read-header stream)))
+        (body ""))
+    (loop for route in *routes* while route do
+          (if (and (equal (getf header :path)
+                          (getf route :path))
+                   (equal (getf header :method-type)
+                          (getf route :method-type)))
+              (write-response stream (funcall (getf route :method)))))))
