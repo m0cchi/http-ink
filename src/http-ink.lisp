@@ -13,12 +13,12 @@
   (loop for route in routes while route do
         (let ((method-type (nth 0 route))
               (path (nth 1 route))
-              (param (nth 2 route))
+              (params (nth 2 route))
               (method (nth 3 route)))
           (push `(:method-type ,method-type
                   :path ,path
-                  :param-length ,(length param)
-                  :method ,(eval `(lambda ,param ,method)))
+                  :params ,(mapcar #'make-keyword params)
+                  :method ,(coerce `(lambda ,params ,method) 'function))
                 *routes*))))
 
 (defun make-keyword (str)
@@ -85,10 +85,16 @@
 (defun ink (stream)
   (let ((header (parse-header
                  (read-header stream)))
-        (body ""))
+        (body "")
+        (args '()))
     (loop for route in *routes* while route do
           (if (and (equal (getf header :path)
                           (getf route :path))
                    (equal (getf header :method-type)
                           (getf route :method-type)))
-              (write-response stream (funcall (getf route :method)))))))
+              (let ((route-params (getf route :params)))
+                (push stream header)
+                (push :stream header)
+                (if (find :env route-params)
+                    (push header args))
+                (write-response stream (funcall (getf route :method) args)))))))
