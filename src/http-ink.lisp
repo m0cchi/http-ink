@@ -15,10 +15,11 @@
               (path (nth 1 route))
               (params (nth 2 route))
               (method (nth 3 route)))
+          (push 'env params)
           (push `(:method-type ,method-type
                   :path ,path
                   :params ,(mapcar #'make-keyword params)
-                  :method ,(coerce `(lambda ,params ,method) 'function))
+                  :method ,(coerce `(lambda ,params (declare (ignorable http-ink::env)) ,method) 'function))
                 *routes*))))
 
 (defun make-keyword (str)
@@ -83,18 +84,20 @@
   (force-output stream))
 
 (defun ink (stream)
-  (let ((header (parse-header
-                 (read-header stream)))
-        (body "")
-        (args '()))
-    (loop for route in *routes* while route do
-          (if (and (equal (getf header :path)
-                          (getf route :path))
-                   (equal (getf header :method-type)
-                          (getf route :method-type)))
-              (let ((route-params (getf route :params)))
-                (push stream header)
-                (push :stream header)
-                (if (find :env route-params)
-                    (push header args))
-                (write-response stream (funcall (getf route :method) args)))))))
+  (let* ((header (parse-header
+                  (read-header stream)))
+         (body "")
+         (args '())
+         (request-path (getf header :path))
+         (request-type (getf header :method-type))
+         (response-proc (car (remove-if-not #'(lambda (route)
+                                                (and (equal (getf route :path)
+                                                            request-path)
+                                                     (equal (getf route :method-type)
+                                                            request-type)))
+                                            *routes*))))
+      (push stream args)
+      (push :stream args)
+      (push header args)
+      (push :header args)
+      (write-response stream (funcall (getf response-proc :method) args))))
