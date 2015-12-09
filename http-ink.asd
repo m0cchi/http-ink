@@ -14,6 +14,7 @@ Author: mocchit
   :license "BSD License"
   :depends-on (:toy-gun
                :babel
+               :local-time
                :split-sequence)
   :components ((:module "src"
                         :components
