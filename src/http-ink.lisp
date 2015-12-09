@@ -1,13 +1,22 @@
 (in-package :cl-user)
 (defpackage http-ink
   (:use :cl)
-  (:use babel)
-  (:use split-sequence)
-  (:export ink defroutes))
+  (:use :babel)
+  (:use :split-sequence)
+  (:use :local-time)
+  (:export :ink :defroutes))
 
 (in-package :http-ink)
 
 (defvar *routes* '())
+
+(defvar +404+  (list :header (list "HTTP/1.1" "404 NotFound"
+                                   :date (local-time:format-rfc1123-timestring nil 
+                                                                               (local-time:universal-to-timestamp (get-universal-time)))
+                                   :server "http-ink"
+                                   :connection "close"
+                                   :content-type "text/html; charset=utf-8")
+                     :body "<html><head><title>http-ink</title></head><body>404</body></html>"))
 
 (defmacro defroutes (&rest routes)
   (loop for route in routes while route do
@@ -100,4 +109,6 @@
       (push :stream args)
       (push header args)
       (push :header args)
-      (write-response stream (funcall (getf response-proc :method) args))))
+      (write-response stream (if response-proc
+                                 (funcall (getf response-proc :method) args)
+                               +404+))))
