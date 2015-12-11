@@ -3,7 +3,7 @@
   (:use :cl)
   (:use :split-sequence)
   (:use :local-time)
-  (:export :ink :defroutes :octets-to-string))
+  (:export :ink :defroutes :defroute :octets-to-string))
 
 (in-package :http-ink)
 
@@ -39,18 +39,25 @@
         while (collect temp buffer))
   buffer)
 
+(defmacro defroute (route)
+  (defroute- route)
+  nil)
+
+(defun defroute- (route)
+  (let ((method-type (nth 0 route))
+        (path (nth 1 route))
+        (params (nth 2 route))
+        (method (nth 3 route)))
+    (push 'env params)
+    (push `(:method-type ,method-type
+            :path ,path
+            :params ,(mapcar #'make-keyword params)
+            :method ,(coerce `(lambda ,params (declare (ignorable http-ink::env)) ,method) 'function))
+          *routes*)))
+
 (defmacro defroutes (&rest routes)
-  (loop for route in routes while route do
-        (let ((method-type (nth 0 route))
-              (path (nth 1 route))
-              (params (nth 2 route))
-              (method (nth 3 route)))
-          (push 'env params)
-          (push `(:method-type ,method-type
-                  :path ,path
-                  :params ,(mapcar #'make-keyword params)
-                  :method ,(coerce `(lambda ,params (declare (ignorable http-ink::env)) ,method) 'function))
-                *routes*))))
+  (loop for route in routes while route
+        do (defroute- route)))
 
 (defun make-keyword (str)
   (values (intern (string-upcase str) "KEYWORD")))
