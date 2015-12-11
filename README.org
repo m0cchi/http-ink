@@ -21,7 +21,9 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (setq toy-gun:*cartridge* #'http-ink:ink)
-  (toy-gun:start :port 8080 :address "0.0.0.0"))
+  (let* ((server (toy-gun:make-server :port 38080 :address "0.0.0.0")))
+    (setq toy-gun:*cartridge* #'http-ink:ink)
+    (toy-gun:start server)
+    (toy-gun:dispose server)))
 #+begin_end
 
