@@ -39,10 +39,6 @@
         while (collect temp buffer))
   buffer)
 
-(defmacro defroute (route)
-  (defroute- route)
-  nil)
-
 (defun defroute- (route)
   (let ((method-type (nth 0 route))
         (path (nth 1 route))
@@ -54,6 +50,10 @@
             :params ,(mapcar #'make-keyword params)
             :method ,(coerce `(lambda ,params (declare (ignorable http-ink::env)) ,method) 'function))
           *routes*)))
+
+(defmacro defroute (route)
+  (defroute- route)
+  nil)
 
 (defmacro defroutes (&rest routes)
   (loop for route in routes while route
