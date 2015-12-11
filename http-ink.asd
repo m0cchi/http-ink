@@ -9,11 +9,12 @@ Author: mocchit
 (in-package :http-ink-asd)
 
 (defsystem http-ink
-  :version "0.0.1"
+  :version "0.0.2"
   :author "mocchi"
   :license "BSD License"
   :depends-on (:toy-gun
                :babel
+               :flexi-streams
                :local-time
                :split-sequence)
   :components ((:module "src"

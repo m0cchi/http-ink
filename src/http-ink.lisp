@@ -4,7 +4,7 @@
   (:use :babel)
   (:use :split-sequence)
   (:use :local-time)
-  (:export :ink :defroutes))
+  (:export :ink :defroutes :octets-to-string))
 
 (in-package :http-ink)
 
@@ -19,6 +19,26 @@
                                        :connection "close"
                                        :content-type "text/html; charset=utf-8")
                          :body "<html><head><title>http-ink</title></head><body>404</body></html>"))))
+
+(defvar +NEWLINE+ 10)
+
+(defun collect (temp buffer)
+  (if (eq temp +NEWLINE+)
+      (progn
+        (vector-push-extend temp buffer)
+        '())
+    (if (or (eq temp nil)
+            (eq temp 255))
+        '()
+      (progn
+        (vector-push-extend temp buffer)
+        T))))
+
+(defun read-line-with-buffer (stream buffer)
+  (setf (fill-pointer buffer) 0)
+  (loop for temp = (read-byte stream nil nil)
+        while (collect temp buffer))
+  buffer)
 
 (defmacro defroutes (&rest routes)
   (loop for route in routes while route do
@@ -43,9 +63,14 @@
       (not (or (eql line-head #\return)
                (eql line-head #\newline))))))
 
+(defun octets-to-string (octets)
+  (unless (eq (length octets) 0)
+    (flexi-streams:octets-to-string octets :external-format :utf-8)))
+
 (defun read-header (stream)
-  (let ((header '()))
-    (loop for line = (read-line stream nil nil)
+  (let ((header '())
+        (buffer (make-array 60 :fill-pointer 0)))
+    (loop for line = (http-ink:octets-to-string (read-line-with-buffer stream buffer))
           while (is-header line) do
           (progn
             (push (string-trim '(#\return #\newline) line) header)))
@@ -83,15 +108,18 @@
     (read-sequence buf stream)
     buf))
 
+(defun write-string-with-octets (string stream)
+  (write-sequence (flexi-streams:string-to-octets string) stream))
+
 (defun write-response (stream response)
   (let ((header (reverse (getf response :header)))
         (body (getf response :body)))
     (push :content-length header)
     (push (babel:string-size-in-octets body) header)
     (setq header (reverse header))
-    (format stream "~a ~a~%" (pop header) (pop header))
-    (format stream "~{~a: ~a~%~}~%" header)
-    (format stream "~a" body))
+    (write-string-with-octets (format nil "~a ~a~%" (pop header) (pop header)) stream)
+    (write-string-with-octets (format nil "~{~a: ~a~%~}~%" header) stream)
+    (write-string-with-octets (format nil "~a" body) stream))
   (force-output stream))
 
 (defun ink (stream)
