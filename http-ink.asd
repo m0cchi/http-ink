@@ -13,7 +13,6 @@ Author: mocchit
   :author "mocchi"
   :license "BSD License"
   :depends-on (:toy-gun
-               :babel
                :flexi-streams
                :local-time
                :split-sequence)

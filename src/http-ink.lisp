@@ -1,7 +1,6 @@
 (in-package :cl-user)
 (defpackage http-ink
   (:use :cl)
-  (:use :babel)
   (:use :split-sequence)
   (:use :local-time)
   (:export :ink :defroutes :octets-to-string))
@@ -111,11 +110,14 @@
 (defun write-string-with-octets (string stream)
   (write-sequence (flexi-streams:string-to-octets string) stream))
 
+(defun string-size-in-octets (string)
+  (length (flexi-streams:string-to-octets string)))
+
 (defun write-response (stream response)
   (let ((header (reverse (getf response :header)))
         (body (getf response :body)))
     (push :content-length header)
-    (push (babel:string-size-in-octets body) header)
+    (push (string-size-in-octets body) header)
     (setq header (reverse header))
     (write-string-with-octets (format nil "~a ~a~%" (pop header) (pop header)) stream)
     (write-string-with-octets (format nil "~{~a: ~a~%~}~%" header) stream)
