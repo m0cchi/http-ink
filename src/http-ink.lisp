@@ -20,6 +20,8 @@
                          :body "<html><head><title>http-ink</title></head><body>404</body></html>"))))
 
 (defvar +NEWLINE+ 10)
+(defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
+(defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline))
 
 (defun collect (temp buffer)
   (if (eq temp +NEWLINE+)
@@ -136,8 +138,8 @@
     (push :content-length header)
     (push (string-size-in-octets body) header)
     (setq header (reverse header))
-    (write-string-with-octets (format nil "~a ~a~c~c" (pop header) (pop header) #\return #\newline) stream)
-    (write-string-with-octets (format nil (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline) header) stream)
+    (write-string-with-octets (format nil +HEADER_RESULT_FORMAT+ (pop header) (pop header)) stream)
+    (write-string-with-octets (format nil +HEADER_LINE_FORMAT+ header) stream)
     (write-string-with-octets (format nil "~a" body) stream))
   (force-output stream))
 
