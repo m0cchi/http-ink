@@ -89,7 +89,7 @@
 (defun parse-method-path-version (method-path-version)
   (let ((header '()))
     (if (< (length method-path-version) 3)
-        (error "version"))
+        (error "invalid version"))
     (push :method-type header)
     (push (make-keyword (nth 0 method-path-version)) header)
     (push :path header)
