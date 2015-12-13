@@ -136,9 +136,6 @@
   (let* ((header (getf response :header))
          (reverse-header (reverse header))
          (body (getf response :body))
-         (write-func (if (typep body 'simple-vector)
-                         #'write-sequence
-                       #'write-string-with-octets))
          (content-length (if (find :content-length header)
                              (getf header :content-length)
                             (string-size-in-octets body))))
