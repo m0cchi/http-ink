@@ -1,7 +1,8 @@
 (in-package :cl-user)
 (defpackage http-ink
   (:use :cl)
-  (:use :split-sequence)
+  (:use :split-sequence
+        :split-sequence)
   (:use :local-time)
   (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string))
 
@@ -108,11 +109,11 @@
 (defun shap-header-string (header-string)
   (remove-if #'(lambda (x) (eq (length x) 0))
              (mapcar #'(lambda (x) (string-trim '(#\return) x))
-                     (split-sequence:split-sequence #\newline header-string))))
+                     (split-sequence #\newline header-string))))
 
 (defun parse-header (header-string)
   (let* ((lines (shap-header-string header-string))
-         (first-line (split-sequence:split-sequence #\space (pop lines)))
+         (first-line (split-sequence #\space (pop lines)))
          (header (parse-method-path-version first-line)))
     (loop for field in lines do
           (loop for korv in (parse-header-field field) do
