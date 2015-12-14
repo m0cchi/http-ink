@@ -136,6 +136,9 @@
   (let* ((header (getf response :header))
          (reverse-header (reverse header))
          (body (getf response :body))
+         (write-body-func (if (stringp body)
+                              #'write-string-with-octets
+                            #'write-sequence))
          (content-length (if (find :content-length header)
                              (getf header :content-length)
                             (string-size-in-octets body))))
@@ -144,9 +147,7 @@
     (setq header (reverse reverse-header))
     (write-string-with-octets (format nil +HEADER_RESULT_FORMAT+ (pop header) (pop header)) stream)
     (write-string-with-octets (format nil +HEADER_LINE_FORMAT+ header) stream)
-    (if (getf response :body-is-vector)
-        (write-sequence body stream)
-      (write-string-with-octets body stream)))
+    (funcall write-body-func body stream))
   (force-output stream))
 
 (defun is-keep-alive (header)
