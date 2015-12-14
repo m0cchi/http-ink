@@ -76,6 +76,19 @@
   (unless (eq (length octets) 0)
     (flexi-streams:octets-to-string octets :external-format :utf-8)))
 
+(defun pair-to-key-value(pair)
+  (if (>= (length pair) 2)
+      `(,(make-keyword (car pair)) ,(cadr pair))
+    pair))
+
+(defun parse-parameter (query-string)
+  (let ((parameter '()))
+    (loop for part in (split-sequence:split-sequence #\& query-string)
+          for pair = (split-sequence:split-sequence #\= part)
+          while pair do
+          (setq parameter (append parameter (pair-to-key-value pair))))
+    parameter))
+
 (defun read-header (stream)
   (let* ((header '())
          (buffer (make-array 60 :fill-pointer 0)))
