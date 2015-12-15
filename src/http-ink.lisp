@@ -83,8 +83,8 @@
 
 (defun parse-parameter (query-string)
   (let ((parameter '()))
-    (loop for part in (split-sequence:split-sequence #\& query-string)
-          for pair = (split-sequence:split-sequence #\= part)
+    (loop for part in (split-sequence #\& query-string)
+          for pair = (split-sequence #\= part)
           while pair do
           (setq parameter (append parameter (pair-to-key-value pair))))
     parameter))
