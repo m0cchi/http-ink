@@ -169,11 +169,11 @@
     (not (equalp connection "close"))))
 
 (defun parse-uri (uri)
-  (let* ((len (length path))
+  (let* ((len (length uri))
          (pos (position #\? uri))
          (path (subseq uri 0 (or pos len)))
          (query-string (if (and pos (< pos len)) (subseq uri (+ pos 1) len)))
-         (params (if params-string (parse-parameter query-string))))
+         (params (if query-string (parse-parameter query-string))))
     `(:path ,path :params ,params)))
 
 (defun ink (stream)
