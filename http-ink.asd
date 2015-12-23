@@ -15,8 +15,11 @@ Author: mocchit
   :depends-on (:toy-gun
                :flexi-streams
                :local-time
+               :trivial-mimes
                :split-sequence)
   :components ((:module "src"
                         :components
-                ((:file "http-ink"))))
+                ((:file "response-util" :depends-on ("http-ink" "constant"))
+                 (:file "constant")
+                 (:file "http-ink"))))
   :description "http component")
