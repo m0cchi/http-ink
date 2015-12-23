@@ -26,8 +26,8 @@
                     (read-sequence buf stream)
                     buf)))
 
-(defun response-with-file (env path)
-  (let ((file (read-file path)))
+(defun response-with-file (env file-path)
+  (let ((file (read-file file-path)))
     (list :header (list "HTTP/1.1" "200 OK"
                         :date (format-rfc1123-timestring nil 
                                                          (universal-to-timestamp (get-universal-time)))
