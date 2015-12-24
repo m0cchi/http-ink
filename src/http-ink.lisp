@@ -1,10 +1,12 @@
 (in-package :cl-user)
-(defpackage http-ink
-  (:use :cl)
-  (:use :split-sequence
-        :split-sequence)
-  (:use :local-time)
-  (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (unless (find-package :http-ink)
+    (defpackage http-ink
+      (:use :cl)
+      (:use :split-sequence)
+      (:use :local-time)
+      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string))))
 
 (in-package :http-ink)
 
@@ -155,7 +157,9 @@
                             #'write-sequence))
          (content-length (if (find :content-length header)
                              (getf header :content-length)
-                            (string-size-in-octets body))))
+                           (if (stringp body)
+                               (string-size-in-octets body)
+                             (length body)))))
     (push :content-length reverse-header)
     (push content-length reverse-header)
     (setq header (reverse reverse-header))
