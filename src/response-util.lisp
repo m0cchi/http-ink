@@ -34,7 +34,7 @@
                         :server +SERVER_NAME+
                         :connection (connection env)
                         :content-type (format nil "~A~:[~;~:*; charset=~A~]"
-                                              (trivial-mimes:mime path) "utf-8")
+                                              (trivial-mimes:mime file-path) "utf-8")
                         :content-length (length file))
           :body file
           :body-is-vector T)))
