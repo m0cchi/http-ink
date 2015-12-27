@@ -77,4 +77,4 @@
     (loop for file-p in files while file-p do
           (push `(:get ,(file-path-to-uri-path file-p path-string-len) ()
                        (respond-with-file http-ink::env ,(namestring file-p))) routes))
-    (append '(http-ink:defroutes) routes)))
+    (append '(defroutes) routes)))
