@@ -19,6 +19,7 @@
                     :defroutes)
       (:export :response
                :response-with-file
+               :response-with-html
                :set-public-dir))))
 (in-package :http-ink.response-util)
 
@@ -43,6 +44,12 @@
                       :connection (connection env)
                       :content-type content-type)
         :body body))
+
+(defun response-with-html (env text &optional (charset "utf-8"))
+  (response env
+            "200 OK"
+            (format nil "text/html ~a" charset)
+            text))
 
 (defun response-with-file (env file-path)
   (let ((file (read-file file-path))
