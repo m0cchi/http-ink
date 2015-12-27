@@ -7,12 +7,10 @@
   (:import-from :http-ink.common-util
                 :make-keyword)
   (:export :parse-header
+           :parse-parameter
            :parse-uri))
 
 (in-package :http-ink.parse-http)
-
-(defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
-(defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline))
 
 (defun pair-to-key-value(pair)
   (if (>= (length pair) 2)
