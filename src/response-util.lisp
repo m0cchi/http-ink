@@ -1,26 +1,24 @@
 (in-package :cl-user)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :http-ink.response-util)
-    (defpackage http-ink.response-util
-      (:use :cl)
-      (:import-from :http-ink.constant
-                    :+SERVER_NAME+)
-      (:import-from :local-time
-                    :universal-to-timestamp
-                    :format-rfc1123-timestring)
-      (:import-from :trivial-mimes
-                    :mime)
-      (:import-from :cl-fad
-                    :directory-exists-p
-                    :list-directory)
-      (:import-from :flexi-streams
-                    :string-to-octets)
-      (:import-from :http-ink
-                    :defroutes)
-      (:export :respond
-               :respond-with-file
-               :respond-with-html
-               :set-public-dir))))
+(defpackage http-ink.response-util
+  (:use :cl)
+  (:import-from :http-ink.constant
+                :+SERVER_NAME+)
+  (:import-from :local-time
+                :universal-to-timestamp
+                :format-rfc1123-timestring)
+  (:import-from :trivial-mimes
+                :mime)
+  (:import-from :cl-fad
+                :directory-exists-p
+                :list-directory)
+  (:import-from :flexi-streams
+                :string-to-octets)
+  (:import-from :http-ink
+                :defroutes)
+  (:export :respond
+           :respond-with-file
+           :respond-with-html
+           :set-public-dir))
 (in-package :http-ink.response-util)
 
 (defun connection (env)
@@ -47,9 +45,9 @@
 
 (defun respond-with-html (env text &optional (charset "utf-8"))
   (respond env
-            "200 OK"
-            (format nil "text/html ~a" charset)
-            text))
+           "200 OK"
+           (format nil "text/html ~a" charset)
+           text))
 
 (defun respond-with-file (env file-path)
   (let ((file (read-file file-path))
