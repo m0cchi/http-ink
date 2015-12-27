@@ -17,9 +17,9 @@
                     :string-to-octets)
       (:import-from :http-ink
                     :defroutes)
-      (:export :response
-               :response-with-file
-               :response-with-html
+      (:export :respond
+               :respond-with-file
+               :respond-with-html
                :set-public-dir))))
 (in-package :http-ink.response-util)
 
@@ -36,7 +36,7 @@
                     (read-sequence buf stream)
                     buf)))
 
-(defun response (env status content-type body)
+(defun respond (env status content-type body)
   (list :header (list "HTTP/1.1" status
                       :date (format-rfc1123-timestring nil 
                                                        (universal-to-timestamp (get-universal-time)))
@@ -45,17 +45,17 @@
                       :content-type content-type)
         :body body))
 
-(defun response-with-html (env text &optional (charset "utf-8"))
-  (response env
+(defun respond-with-html (env text &optional (charset "utf-8"))
+  (respond env
             "200 OK"
             (format nil "text/html ~a" charset)
             text))
 
-(defun response-with-file (env file-path)
+(defun respond-with-file (env file-path)
   (let ((file (read-file file-path))
         (content-type (format nil "~A~:[~;~:*; charset=~A~]"
                               (trivial-mimes:mime file-path) "utf-8")))
-    (response env "200 OK" content-type file)))
+    (respond env "200 OK" content-type file)))
 
 (defun string-size-in-octets (string)
   (length (string-to-octets string)))
@@ -78,5 +78,5 @@
         (routes '()))
     (loop for file-p in files while file-p do
           (push `(:get ,(file-path-to-uri-path file-p path-string-len) ()
-                       (response-with-file http-ink::env ,(namestring file-p))) routes))
+                       (respond-with-file http-ink::env ,(namestring file-p))) routes))
     (append '(http-ink:defroutes) routes)))
