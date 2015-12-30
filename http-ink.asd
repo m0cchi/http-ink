@@ -12,8 +12,7 @@ Author: mocchit
   :version "0.0.2"
   :author "mocchi"
   :license "BSD License"
-  :depends-on (:toy-gun
-               :flexi-streams
+  :depends-on (:flexi-streams
                :cl-fad
                :local-time
                :trivial-mimes
