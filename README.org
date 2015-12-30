@@ -7,7 +7,7 @@ is HTTP-Server
 #|
 exec ros -Q -- $0 "$@"
 |#
-(ql:quickload :http-ink)
+(ql:quickload '(:toy-gun :http-ink) :silent t)
 
 (http-ink:defroute
  (:get "/path" () (http-ink.response-util:respond-with-html http-ink::env "response body")))
@@ -19,4 +19,3 @@ exec ros -Q -- $0 "$@"
     (toy-gun:start server)
     (toy-gun:dispose server)))
 #+begin_end
-
