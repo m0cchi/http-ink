@@ -10,7 +10,7 @@
                     :parse-uri)
       (:import-from :http-ink.common-util
                     :make-keyword)
-      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string))))
+      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string :search-route))))
 
 (in-package :http-ink)
 
