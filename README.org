@@ -1,6 +1,15 @@
 #+title: http-ink
 is HTTP-Server
 
+** setup
+#+begin_src sh
+$ gem install qlgit
+;;https://rubygems.org/gems/qlgit/
+$ qlgit install mocchit/plastic-toy-gun
+$ qlgit install mocchit/http-ink
+#+begin_end
+
+** sample code
 #+begin_src cl
 #!/bin/sh
 #|-*- mode:lisp -*-|#
