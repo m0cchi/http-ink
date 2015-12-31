@@ -150,6 +150,7 @@
                (request-path (getf uri :path))
                (request-type (getf header :method-type))
                (response-proc (search-route request-type request-path)))
+          (format toy-gun:*log* "~{~a:~a~%~}~%" header)
           (push request-path args)
           (push :path args)
           (push (getf uri :params) args)
