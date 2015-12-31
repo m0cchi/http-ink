@@ -12,12 +12,13 @@
                     :parse-uri)
       (:import-from :http-ink.common-util
                     :make-keyword)
-      (:export :ink :is-keep-alive :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*expire-time* :*routes* :register-route))))
+      (:export :ink :is-keep-alive :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*log* :*expire-time* :*routes* :register-route))))
 
 (in-package :http-ink)
 
 (defvar *routes* '())
 (defvar *expire-time* 0)
+(defvar *log* t)
 (defvar +404+ `(:method 
                 ,(lambda (env)
                    (list :header (list "HTTP/1.1" "404 NotFound"
@@ -158,7 +159,7 @@
                (request-path (getf uri :path))
                (request-type (getf header :method-type))
                (response-proc (search-route request-type request-path)))
-          (format toy-gun:*log* "~{~a:~a~%~}~%" header)
+          (format *log* "~{~a:~a~%~}~%" header)
           (push request-path args)
           (push :path args)
           (push (getf uri :params) args)
