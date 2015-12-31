@@ -7,7 +7,7 @@ is HTTP-Server
 #|
 exec ros -Q -- $0 "$@"
 |#
-(ql:quickload '(:toy-gun :http-ink) :silent t)
+(ql:quickload '(:plastic-toy-gun :http-ink) :silent t)
 
 (http-ink:defroute
  (:get "/path" () (http-ink.response-util:respond-with-html http-ink::env "response body")))
