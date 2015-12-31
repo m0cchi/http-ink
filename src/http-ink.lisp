@@ -12,7 +12,7 @@
                     :parse-uri)
       (:import-from :http-ink.common-util
                     :make-keyword)
-      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string :search-route :dispatch :*expire-time*))))
+      (:export :ink :is-keep-alive :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*expire-time* :*routes* :register-route))))
 
 (in-package :http-ink)
 
@@ -62,25 +62,33 @@
 (defmacro dispatch (method-type path)
   `(funcall (getf (http-ink:search-route ,method-type ,path) http-ink::env)))
 
+(defun register-route (route)
+  (let* ((method (getf route :method))
+         (func (coerce method 'function)))
+    (setf (getf route :method) func)
+    (push route *routes*)))
+
 (defun defroute- (route)
-  (let ((method-type (nth 0 route))
-        (path (nth 1 route))
-        (params (nth 2 route))
-        (method (nth 3 route)))
+  (let* ((method-type (nth 0 route))
+         (path (nth 1 route))
+         (params (nth 2 route))
+         (method (nth 3 route)))
     (push 'env params)
-    (push `(:method-type ,method-type
-            :path ,path
-            :params ,(mapcar #'make-keyword params)
-            :method ,(coerce `(lambda ,params (declare (ignorable http-ink::env)) ,method) 'function))
-          *routes*)))
+    `(:method-type ,method-type
+      :path ,path
+      :params ,(mapcar #'make-keyword params)
+      :method (lambda ,params
+                         (declare (ignorable http-ink::env)) ,method))))
+
 
 (defmacro defroute (route)
-  (defroute- route)
-  nil)
+  `(register-route (quote ,(defroute- route))))
 
 (defmacro defroutes (&rest routes)
-  (loop for route in routes while route
-        do (defroute- route)))
+  (let ((route- '()))
+    (loop for route in routes while route
+          do (push `(register-route (quote ,(defroute- route))) route-))
+    (append '(progn) route-)))
 
 (defun is-header (line)
   (if (= (length line) 0)
