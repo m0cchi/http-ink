@@ -4,18 +4,20 @@
   (unless (find-package :http-ink)
     (defpackage http-ink
       (:use :cl)
-      (:use :local-time)
+      (:import-from :local-time
+                    :universal-to-timestamp
+                    :format-rfc1123-timestring)
       (:import-from :http-ink.parse-http
                     :parse-header
                     :parse-uri)
       (:import-from :http-ink.common-util
                     :make-keyword)
-      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string :search-route))))
+      (:export :ink :is-keep-alive :defroutes :defroute :octets-to-string :search-route :dispatch :*expire-time*))))
 
 (in-package :http-ink)
 
 (defvar *routes* '())
-
+(defvar *expire-time* 0)
 (defvar +404+ `(:method 
                 ,(lambda (env)
                    (list :header (list "HTTP/1.1" "404 NotFound"
@@ -56,6 +58,9 @@
                                               method-type)))
                               *routes*)))
     (or (car route) +404+)))
+
+(defmacro dispatch (method-type path)
+  `(funcall (getf (http-ink:search-route ,method-type ,path) http-ink::env)))
 
 (defun defroute- (route)
   (let ((method-type (nth 0 route))
@@ -119,6 +124,13 @@
                              (length body)))))
     (push :content-length reverse-header)
     (push content-length reverse-header)
+    (push :cache-control reverse-header)
+    (push (format nil "max-age=~a" *expire-time*) reverse-header)
+    (push :expires reverse-header)
+    (push (local-time:format-rfc1123-timestring
+           nil
+           (local-time:universal-to-timestamp (+ *expire-time* (get-universal-time))))
+          reverse-header)
     (setq header (reverse reverse-header))
     (write-string-with-octets (format nil +HEADER_RESULT_FORMAT+ (pop header) (pop header)) stream)
     (write-string-with-octets (format nil +HEADER_LINE_FORMAT+ header) stream)
