@@ -7,7 +7,7 @@ $ gem install qlgit
 ;;https://rubygems.org/gems/qlgit/
 $ qlgit install mocchit/plastic-toy-gun
 $ qlgit install mocchit/http-ink
-#+begin_end
+#+end_src
 
 ** sample code
 #+begin_src cl
@@ -27,4 +27,4 @@ exec ros -Q -- $0 "$@"
     (setq toy-gun:*cartridge* #'http-ink:ink)
     (toy-gun:start server)
     (toy-gun:dispose server)))
-#+begin_end
+#+end_src
