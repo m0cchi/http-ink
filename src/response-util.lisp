@@ -39,13 +39,13 @@
                       :content-type content-type)
         :body body))
 
-(defun respond-with-html (env text &optional (charset "utf-8") (status "200 OK"))
+(defun respond-with-html (env text &key (charset "utf-8") (status "200 OK"))
   (respond env
            status
            (format nil "text/html ~a" charset)
            text))
 
-(defun respond-with-file (env file-path &optional (status "200 OK"))
+(defun respond-with-file (env file-path &key (status "200 OK"))
   (let ((file (read-file file-path))
         (content-type (format nil "~A~:[~;~:*; charset=~A~]"
                               (mime file-path) "utf-8")))
