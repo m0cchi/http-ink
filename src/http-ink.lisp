@@ -10,6 +10,8 @@
       (:import-from :http-ink.parse-http
                     :parse-header
                     :parse-uri)
+      (:import-from :http-ink.response-util
+                    :respond-with-html)
       (:import-from :http-ink.common-util
                     :make-keyword)
       (:export :ink :is-keep-alive :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*log* :*expire-time* :*routes* :register-route))))
@@ -21,13 +23,10 @@
 (defvar *log* t)
 (defvar +404+ `(:method 
                 ,(lambda (env)
-                   (list :header (list "HTTP/1.1" "404 NotFound"
-                                       :date (local-time:format-rfc1123-timestring nil 
-                                                                                   (local-time:universal-to-timestamp (get-universal-time)))
-                                       :server "http-ink"
-                                       :connection "close"
-                                       :content-type "text/html; charset=utf-8")
-                         :body "<html><head><title>http-ink</title></head><body>404</body></html>"))))
+                   (setf (getf env :connection) "close")
+                   (respond-with-html env
+                                      "<html><head><title>http-ink</title></head><body>404</body></html>"
+                                      :status "404 NotFound"))))
 
 (defvar +NEWLINE+ 10)
 (defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
