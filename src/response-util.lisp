@@ -8,22 +8,18 @@
                 :format-rfc1123-timestring)
   (:import-from :trivial-mimes
                 :mime)
-  (:import-from :cl-fad
-                :directory-exists-p
-                :list-directory)
-  (:import-from :flexi-streams
-                :string-to-octets)
-  (:import-from :http-ink
-                :defroutes)
   (:export :respond
            :respond-with-file
-           :respond-with-html
-           :set-public-dir))
+           :respond-with-html))
 (in-package :http-ink.response-util)
+
+(defun is-keep-alive (header)
+  (let ((connection (getf header :connection)))
+    (not (equalp connection "close"))))
 
 (defun connection (env)
   (let* ((header (getf env :header))
-        (is-keep-alive (http-ink:is-keep-alive header)))
+        (is-keep-alive (is-keep-alive header)))
     (if is-keep-alive
         "keep-alive"
       "close")))
@@ -52,29 +48,5 @@
 (defun respond-with-file (env file-path &optional (status "200 OK"))
   (let ((file (read-file file-path))
         (content-type (format nil "~A~:[~;~:*; charset=~A~]"
-                              (trivial-mimes:mime file-path) "utf-8")))
+                              (mime file-path) "utf-8")))
     (respond env status content-type file)))
-
-(defun string-size-in-octets (string)
-  (length (string-to-octets string)))
-
-(defun search-files (path)
-  (let* ((all (list-directory path))
-         (files (remove-if #'directory-exists-p all))
-         (dirs (remove-if-not #'directory-exists-p all)))
-    (loop for dir in dirs while dir do
-          (setq files (append files (search-files dir))))
-    files))
-
-(defun file-path-to-uri-path (file-p base-len)
-  (let ((path-string (namestring file-p)))
-    (format nil "/~a" (subseq path-string base-len (string-size-in-octets path-string)))))
-
-(defmacro set-public-dir (path)
-  (let ((path-string-len (string-size-in-octets (namestring (cl-fad:directory-exists-p path))))
-        (files (search-files path))
-        (routes '()))
-    (loop for file-p in files while file-p do
-          (push `(:get ,(file-path-to-uri-path file-p path-string-len) ()
-                       (respond-with-file http-ink::env ,(namestring file-p))) routes))
-    (append '(defroutes) routes)))

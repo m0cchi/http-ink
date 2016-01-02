@@ -14,7 +14,7 @@
                     :respond-with-html)
       (:import-from :http-ink.common-util
                     :make-keyword)
-      (:export :ink :is-keep-alive :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*log* :*expire-time* :*routes* :register-route))))
+      (:export :ink :defroutes :defroute :defroute- :octets-to-string :search-route :dispatch :*log* :*expire-time* :*routes* :register-route))))
 
 (in-package :http-ink)
 
@@ -36,6 +36,10 @@
 (defvar +NEWLINE+ 10)
 (defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
 (defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline))
+
+(defun is-keep-alive (header)
+  (let ((connection (getf header :connection)))
+    (not (equalp connection "close"))))
 
 (defun collect (temp buffer)
   (if (eq temp +NEWLINE+)
@@ -150,10 +154,6 @@
     (funcall write-body-func body stream))
   (force-output stream))
 
-(defun is-keep-alive (header)
-  (let ((connection (getf header :connection)))
-    (not (equalp connection "close"))))
-
 (defun ink (stream)
   (loop for header-string = (read-header stream)
         while (not (eq header-string nil)) do
@@ -172,8 +172,11 @@
           (push :stream args)
           (push header args)
           (push :header args)
-          (write-response stream (funcall (getf response-proc :method) args))
-          (if  (is-keep-alive header)
+          (write-response stream
+                          (handler-case
+                           (funcall (getf response-proc :method) args)
+                           (error (c) (funcall +500+ args))))
+          (if (is-keep-alive header)
               (file-position stream (+ (string-size-in-octets header-string)
                                        (parse-integer (getf header :content-length "0"))))
             (loop-finish)))))

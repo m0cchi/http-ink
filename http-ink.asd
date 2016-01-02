@@ -19,8 +19,9 @@ Author: mocchit
                :split-sequence)
   :components ((:module "src"
                         :components
-                ((:file "response-util" :depends-on ("http-ink" "constant"))
-                 (:file "http-ink" :depends-on ("parse-http" "common-util"))
+                ((:file "response-util" :depends-on ("constant"))
+                 (:file "http-ink" :depends-on ("parse-http" "common-util" "response-util"))
+                 (:file "http-ink-util" :depends-on ("http-ink"))
                  (:file "parse-http" :depends-on("common-util"))
                  (:file "constant")
                  (:file "common-util"))))
