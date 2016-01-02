@@ -27,7 +27,12 @@
                    (respond-with-html env
                                       "<html><head><title>http-ink</title></head><body>404</body></html>"
                                       :status "404 NotFound"))))
-
+(defvar +500+ `(:method 
+                ,(lambda (env)
+                   (setf (getf env :connection) "close")
+                   (respond-with-html env
+                                      "<html><head><title>http-ink</title></head><body>500 Internal Server Error</body></html>"
+                                      :status "500 Internal Server Error"))))
 (defvar +NEWLINE+ 10)
 (defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
 (defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline))
