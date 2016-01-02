@@ -49,11 +49,11 @@
            (format nil "text/html ~a" charset)
            text))
 
-(defun respond-with-file (env file-path)
+(defun respond-with-file (env file-path &optional (status "200 OK"))
   (let ((file (read-file file-path))
         (content-type (format nil "~A~:[~;~:*; charset=~A~]"
                               (trivial-mimes:mime file-path) "utf-8")))
-    (respond env "200 OK" content-type file)))
+    (respond env status content-type file)))
 
 (defun string-size-in-octets (string)
   (length (string-to-octets string)))
