@@ -43,9 +43,9 @@
                       :content-type content-type)
         :body body))
 
-(defun respond-with-html (env text &optional (charset "utf-8"))
+(defun respond-with-html (env text &optional (charset "utf-8") (status "200 OK"))
   (respond env
-           "200 OK"
+           status
            (format nil "text/html ~a" charset)
            text))
 
