@@ -175,7 +175,7 @@
           (write-response stream
                           (handler-case
                            (funcall (getf response-proc :method) args)
-                           (error (c) (funcall +500+ args))))
+                           (error (c) (funcall (getf +500+ :method) args))))
           (if (is-keep-alive header)
               (file-position stream (+ (string-size-in-octets header-string)
                                        (parse-integer (getf header :content-length "0"))))
