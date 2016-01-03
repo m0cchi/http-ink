@@ -35,7 +35,7 @@
                                       :status "500 Internal Server Error"))))
 (defvar +NEWLINE+ 10)
 (defvar +HEADER_RESULT_FORMAT+ (format nil "~a~c~c" "~a ~a" #\return #\newline))
-(defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~a: ~a" #\return #\newline "~}" #\return #\newline))
+(defvar +HEADER_LINE_FORMAT+ (format nil "~a~c~c~a~c~c" "~{~:(~a~): ~a" #\return #\newline "~}" #\return #\newline))
 
 (defun is-keep-alive (header)
   (let ((connection (getf header :connection)))
@@ -163,7 +163,7 @@
                (request-path (getf uri :path))
                (request-type (getf header :method-type))
                (response-proc (search-route request-type request-path)))
-          (format *log* "~{~a:~a~%~}~%" header)
+          (format *log* "~{~:(~a~):~a~%~}~%" header)
           (push request-path args)
           (push :path args)
           (push (getf uri :params) args)
