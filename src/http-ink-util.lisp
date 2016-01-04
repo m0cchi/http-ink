@@ -13,7 +13,8 @@
                 :defroutes)
   (:import-from :http-ink.response-util
                 :respond-with-file)
-  (:export :set-public-dir))
+  (:export :set-public-dir
+           :read-body))
 
 (in-package :http-ink.util)
 
@@ -41,3 +42,9 @@
                        (respond-with-file http-ink::env ,(namestring file-p))) routes))
     (append '(defroutes) routes)))
 
+(defun read-body (env)
+  (let ((buf (make-array (parse-integer (getf (getf env :header) :content-length "0"))
+                         :element-type '(unsigned-byte 8)))
+        (stream (getf env :stream)))
+    (read-sequence buf stream)
+    buf))
