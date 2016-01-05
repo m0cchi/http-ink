@@ -21,6 +21,13 @@ exec ros -Q -- $0 "$@"
 (http-ink:defroute
  (:get "/path" () (http-ink.response-util:respond-with-html http-ink::env "response body")))
 
+(http-ink:defroutes
+ (:post "/post" ()
+        (http-ink.response-util:respond-with-html http-ink::env
+                                                  (http-ink.util:read-body http-ink::env)))
+ (:post "/path" () (http-ink.response-util:respond-with-html http-ink::env "response body"))
+ (:get "/" () (http-ink.response-util:respond-with-html http-ink::env "response body")))
+
 (defun main (&rest argv)
   (declare (ignorable argv))
   (let* ((server (plastic-toy-gun:make-server :port 38080 :address "0.0.0.0")))
