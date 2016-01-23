@@ -23,13 +23,25 @@
 (defvar *log* t)
 (defvar +404+ `(:method 
                 ,(lambda (env)
-                   (setf (getf env :connection) "close")
+                   (let* ((header (getf env :header '(:connection "close")))
+                          (connection (getf header :connection)))
+                     (if connection
+                         (setf connection "close")
+                       (progn
+                         (push "close" header)
+                         (push :connection header))))
                    (respond-with-html env
-                                      "<html><head><title>http-ink</title></head><body>404</body></html>"
+                                      "<html><head><title>http-ink</title></head><body>404 NotFound</body></html>"
                                       :status "404 NotFound"))))
 (defvar +500+ `(:method 
                 ,(lambda (env)
-                   (setf (getf env :connection) "close")
+                   (let* ((header (getf env :header '(:connection "close")))
+                          (connection (getf header :connection)))
+                     (if connection
+                         (setf connection "close")
+                       (progn
+                         (push "close" header)
+                         (push :connection header))))
                    (respond-with-html env
                                       "<html><head><title>http-ink</title></head><body>500 Internal Server Error</body></html>"
                                       :status "500 Internal Server Error"))))
