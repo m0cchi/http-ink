@@ -78,7 +78,7 @@
                                        (equal (getf route :method-type)
                                               method-type)))
                               *routes*)))
-    (or (car route) +404+)))
+    (car route)))
 
 (defmacro dispatch (method-type path)
   `(funcall (getf (http-ink:search-route ,method-type ,path) http-ink::env)))
@@ -87,7 +87,25 @@
   (let* ((method (getf route :method))
          (func (coerce method 'function)))
     (setf (getf route :method) func)
-    (push route *routes*)))
+    (if (not (search-route (getf route :method-type)
+                           (getf route :path)))
+        (push route *routes*)
+      *routes*)))
+
+(defun -swap-value (keyword new old)
+  (setf (getf old keyword) (getf new keyword)))
+
+(defun -swap-route (new old)
+  (-swap-value :params new old)
+  (-swap-value :method new old)
+  old)
+
+(defun -intern-route (route)
+  (let* ((old-route (search-route (getf route :method-type)
+                                  (getf route :path))))
+    (if old-route
+        (-swap-route route old-route)
+      route)))
 
 (defun defroute- (route)
   (let* ((method-type (nth 0 route))
@@ -95,12 +113,11 @@
          (params (nth 2 route))
          (method (nth 3 route)))
     (push 'env params)
-    `(:method-type ,method-type
-      :path ,path
-      :params ,(mapcar #'make-keyword params)
-      :method (lambda ,params
-                         (declare (ignorable http-ink::env)) ,method))))
-
+    (-intern-route `(:method-type ,method-type
+                     :path ,path
+                     :params ,(mapcar #'make-keyword params)
+                     :method (lambda ,params
+                               (declare (ignorable http-ink::env)) ,method)))))
 
 (defmacro defroute (route)
   `(register-route (quote ,(defroute- route))))
@@ -174,7 +191,7 @@
                (uri (parse-uri (getf header :uri)))
                (request-path (getf uri :path))
                (request-type (getf header :method-type))
-               (response-proc (search-route request-type request-path)))
+               (response-proc (or (search-route request-type request-path) +404+)))
           (format *log* "~{~:(~a~):~a~%~}~%" header)
           (push request-path args)
           (push :path args)
