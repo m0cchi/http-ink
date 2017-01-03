@@ -5,8 +5,8 @@ is HTTP-Server
 #+begin_src sh
 $ gem install qlgit
 ;;https://rubygems.org/gems/qlgit/
-$ qlgit install mocchit/plastic-toy-gun
-$ qlgit install mocchit/http-ink
+$ qlgit install m0cchi/plastic-toy-gun
+$ qlgit install m0cchi/http-ink
 #+end_src
 
 ** sample code
